@@ -1,4 +1,5 @@
 import os
+import base64
 from pathlib import Path
 from typing import List, Optional
 from openai import OpenAI
@@ -11,30 +12,55 @@ import requests
 class ImageGenerator:
     def __init__(self, character_manager: CharacterManager):
         self.character_manager = character_manager
-        self.client = OpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
+        
+        if settings.qiniu_api_key:
+            self.client = OpenAI(
+                api_key=settings.qiniu_api_key,
+                base_url=settings.qiniu_base_url
+            )
+            self.use_qiniu = True
+        elif settings.openai_api_key:
+            self.client = OpenAI(api_key=settings.openai_api_key)
+            self.use_qiniu = False
+        else:
+            self.client = None
+            self.use_qiniu = False
+            
         self.output_dir = Path(settings.output_dir) / "images"
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
     def generate_scene_image(self, scene: Scene, output_filename: str) -> Optional[str]:
         if not self.client:
-            print(f"⚠️ 未配置OpenAI API Key，跳过图像生成")
+            print(f"⚠️ 未配置API Key，跳过图像生成")
             return None
         
         prompt = self._build_scene_prompt(scene)
         
         try:
-            response = self.client.images.generate(
-                model=settings.image_model,
-                prompt=prompt,
-                size="1024x1024",
-                quality="standard",
-                n=1
-            )
-            
-            image_url = response.data[0].url
-            
-            output_path = self.output_dir / output_filename
-            self._download_image(image_url, output_path)
+            if self.use_qiniu:
+                response = self.client.images.generate(
+                    model=settings.image_model,
+                    prompt=prompt,
+                    size="1024x1024",
+                    n=1,
+                    response_format="b64_json"
+                )
+                
+                image_data = response.data[0].b64_json
+                output_path = self.output_dir / output_filename
+                self._save_base64_image(image_data, output_path)
+            else:
+                response = self.client.images.generate(
+                    model=settings.image_model,
+                    prompt=prompt,
+                    size="1024x1024",
+                    quality="standard",
+                    n=1
+                )
+                
+                image_url = response.data[0].url
+                output_path = self.output_dir / output_filename
+                self._download_image(image_url, output_path)
             
             return str(output_path)
         
@@ -75,6 +101,12 @@ class ImageGenerator:
         
         return final_prompt
     
+    def _save_base64_image(self, b64_data: str, output_path: Path):
+        image_bytes = base64.b64decode(b64_data)
+        with open(output_path, 'wb') as f:
+            f.write(image_bytes)
+        print(f"✓ 图像已保存到: {output_path}")
+    
     def _download_image(self, url: str, output_path: Path):
         response = requests.get(url)
         response.raise_for_status()
@@ -86,7 +118,7 @@ class ImageGenerator:
     
     def generate_character_reference(self, character_name: str) -> Optional[str]:
         if not self.client:
-            print(f"⚠️ 未配置OpenAI API Key，跳过角色参考图生成")
+            print(f"⚠️ 未配置API Key，跳过角色参考图生成")
             return None
         
         profile = self.character_manager.get_visual_profile(character_name)
@@ -94,17 +126,30 @@ class ImageGenerator:
             return None
         
         try:
-            response = self.client.images.generate(
-                model=settings.image_model,
-                prompt=profile.reference_prompt,
-                size="1024x1024",
-                quality="standard",
-                n=1
-            )
-            
-            image_url = response.data[0].url
             output_path = self.output_dir / f"character_ref_{character_name}.png"
-            self._download_image(image_url, output_path)
+            
+            if self.use_qiniu:
+                response = self.client.images.generate(
+                    model=settings.image_model,
+                    prompt=profile.reference_prompt,
+                    size="1024x1024",
+                    n=1,
+                    response_format="b64_json"
+                )
+                
+                image_data = response.data[0].b64_json
+                self._save_base64_image(image_data, output_path)
+            else:
+                response = self.client.images.generate(
+                    model=settings.image_model,
+                    prompt=profile.reference_prompt,
+                    size="1024x1024",
+                    quality="standard",
+                    n=1
+                )
+                
+                image_url = response.data[0].url
+                self._download_image(image_url, output_path)
             
             return str(output_path)
         

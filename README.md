@@ -1,13 +1,20 @@
 # 动漫生成器 - 从小说到动漫
 
-这是一个自动根据小说文本生成动漫的工具。它可以：
-- 自动提取小说中的角色和场景
-- 为每个角色生成一致的视觉形象
-- 生成场景图片（图配文的形式）
-- 生成场景旁白和对话的语音
-- 输出HTML预览页面，展示完整的动漫内容
+这是一个自动根据小说文本生成动漫的Web应用。它可以：
+- 🌐 **Web界面**：用户友好的网页界面，可在本地或服务器部署
+- 🤖 **七牛云AI**：使用七牛云大模型API进行图像生成和文本分析
+- 🎭 **角色一致性**：自动提取小说中的角色并保持视觉一致性
+- 🎨 **动漫风格**：生成高质量动漫风格场景图片
+- 🔊 **语音合成**：生成场景旁白和对话的语音
+- 📱 **实时预览**：自动生成HTML预览页面展示完整动漫
 
 ## 功能特点
+
+### 🌐 Web应用界面
+- 现代化的响应式Web界面
+- 支持本地部署或服务器部署
+- 实时进度显示
+- 异步任务处理
 
 ### 🎭 角色一致性
 - 自动提取小说中的所有主要角色
@@ -21,12 +28,13 @@
 - 生成适合AI图像生成的详细场景描述
 
 ### 🎨 图像生成
-- 使用DALL-E 3生成高质量动漫风格图片
+- 使用七牛云Gemini 2.5 Flash Image模型生成高质量动漫风格图片
 - 每个场景都包含相应的角色和背景
 - 支持生成角色参考图和场景图
+- Base64格式直接接收，无需下载
 
 ### 🔊 音频生成
-- 使用OpenAI TTS生成场景旁白
+- 使用OpenAI TTS生成场景旁白（可选）
 - 支持为对话生成语音
 - 自动合成完整的场景音频
 
@@ -56,12 +64,36 @@ cp .env.example .env
 ```
 
 需要配置的API密钥：
-- `OPENAI_API_KEY`: 用于图像生成和文字转语音（必需）
-- `ANTHROPIC_API_KEY`: 用于高级文本分析（可选）
+- `QINIU_API_KEY`: 七牛云大模型API密钥（必需，用于图像生成和文本分析）
+- `OPENAI_API_KEY`: OpenAI API密钥（可选，用于TTS语音合成）
+
+示例API密钥格式：`sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a873`
 
 ## 使用方法
 
-### 基本使用
+### Web应用模式（推荐）
+
+1. 启动Web服务器：
+```bash
+python app.py
+```
+
+2. 打开浏览器访问：
+```
+http://localhost:5000
+```
+或如果部署在服务器上：
+```
+http://服务器IP:5000
+```
+
+3. 在网页文本框中输入小说内容
+
+4. 点击"生成动漫"按钮
+
+5. 等待生成完成后，点击"查看生成的动漫"即可预览
+
+### 命令行模式
 
 ```bash
 python main.py example_novel.txt
@@ -111,15 +143,18 @@ output/
 
 ```
 .
-├── main.py                 # 主程序入口
+├── app.py                  # Flask Web应用（主入口）
+├── main.py                 # 命令行程序入口
 ├── anime_generator.py      # 动漫生成器核心类
 ├── novel_parser.py         # 小说解析器
 ├── character_manager.py    # 角色管理器（保持一致性）
-├── image_generator.py      # 图像生成器
+├── image_generator.py      # 图像生成器（七牛云API）
 ├── audio_generator.py      # 音频生成器
 ├── config.py              # 配置管理
 ├── requirements.txt       # Python依赖
 ├── .env.example          # 环境变量模板
+├── templates/            # Flask模板目录
+│   └── index.html       # Web界面
 └── example_novel.txt     # 示例小说
 ```
 
@@ -131,32 +166,49 @@ output/
 python main.py example_novel.txt
 ```
 
+或在Web界面中点击"点击加载示例小说"快速体验。
+
 这个示例讲述了一个关于高中生小雪和明宇因救助小猫而成为朋友的温馨故事。
 
 ## 技术栈
 
-- **文本分析**: OpenAI GPT-4
-- **图像生成**: DALL-E 3
-- **语音合成**: OpenAI TTS
-- **Python库**: openai, anthropic, pillow, pydantic
+- **Web框架**: Flask（提供Web服务和API）
+- **AI服务**: 七牛云大模型平台
+  - 图像生成：Gemini 2.5 Flash Image
+  - 文本分析：GPT系列模型（通过七牛云API）
+- **语音合成**: OpenAI TTS（可选）
+- **Python库**: openai, flask, pillow, pydantic, requests
 
 ## 配置说明
 
 在 `.env` 文件中可以配置以下参数：
 
 ```env
-OPENAI_API_KEY=sk-...           # OpenAI API密钥
-ANTHROPIC_API_KEY=sk-ant-...    # Anthropic API密钥（可选）
-IMAGE_MODEL=dall-e-3            # 图像生成模型
-TTS_MODEL=tts-1                 # 语音合成模型
-TEXT_MODEL=gpt-4                # 文本分析模型
-OUTPUT_DIR=output               # 输出目录
+# 七牛云API配置（必需）
+QINIU_API_KEY=sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a873
+QINIU_BASE_URL=https://openai.qiniu.com/v1
+QINIU_BACKUP_URL=https://api.qnaigc.com/v1
+
+# OpenAI API配置（可选，用于TTS）
+OPENAI_API_KEY=your_openai_key_here
+
+# 模型配置
+IMAGE_MODEL=gemini-2.5-flash-image  # 七牛云图像生成模型
+TTS_MODEL=tts-1                      # 语音合成模型
+TEXT_MODEL=gpt-4                     # 文本分析模型
+
+# Web服务配置
+WEB_HOST=0.0.0.0                     # Web服务监听地址
+WEB_PORT=5000                        # Web服务端口
+
+# 输出目录
+OUTPUT_DIR=output
 ```
 
 ## 工作原理
 
 ### 1. 角色提取
-使用GPT-4分析小说文本，提取所有主要角色的信息：
+使用GPT模型（通过七牛云API）分析小说文本，提取所有主要角色的信息：
 - 角色名字
 - 背景描述
 - 外貌特征（详细描述，用于保持一致性）
@@ -179,8 +231,8 @@ OUTPUT_DIR=output               # 输出目录
 
 ### 4. 内容生成
 对每个场景：
-- 使用DALL-E 3生成场景图片（包含一致的角色形象）
-- 使用OpenAI TTS生成场景旁白和对话音频
+- 使用七牛云Gemini 2.5 Flash Image生成场景图片（包含一致的角色形象）
+- 使用OpenAI TTS生成场景旁白和对话音频（可选）
 - 记录所有元数据
 
 ### 5. 预览生成
@@ -189,12 +241,96 @@ OUTPUT_DIR=output               # 输出目录
 - 场景展示区域（图片 + 文字 + 音频）
 - 响应式布局
 
+## 部署说明
+
+### 本地部署
+
+```bash
+python app.py
+```
+
+访问 `http://localhost:5000`
+
+### 服务器部署
+
+1. 修改 `.env` 文件中的 `WEB_HOST` 和 `WEB_PORT`：
+```env
+WEB_HOST=0.0.0.0
+WEB_PORT=5000
+```
+
+2. 启动服务：
+```bash
+python app.py
+```
+
+3. 通过服务器IP访问：
+```
+http://服务器IP:5000
+```
+
+### 生产环境部署（推荐使用Gunicorn）
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+## API文档
+
+### POST /api/generate
+生成动漫
+
+**请求体**：
+```json
+{
+  "novel_text": "小说文本内容..."
+}
+```
+
+**响应**：
+```json
+{
+  "task_id": "1234567890",
+  "message": "动漫生成任务已启动"
+}
+```
+
+### GET /api/status/<task_id>
+查询生成状态
+
+**响应**：
+```json
+{
+  "status": "processing",
+  "progress": 50,
+  "message": "正在生成场景图像...",
+  "result": null
+}
+```
+
+完成时：
+```json
+{
+  "status": "completed",
+  "progress": 100,
+  "message": "生成完成！",
+  "result": {
+    "preview_url": "/output/preview.html",
+    "characters_count": 3,
+    "scenes_count": 5
+  }
+}
+```
+
 ## 注意事项
 
-1. **API费用**: 图像和音频生成会消耗OpenAI API额度，请注意使用量
-2. **处理时间**: 生成过程可能需要几分钟，取决于场景数量
-3. **文本长度**: 建议小说长度在1000-5000字之间，太长可能需要较长处理时间
-4. **中文支持**: 完全支持中文小说和中文界面
+1. **API配置**: 必须配置七牛云API密钥才能使用图像生成功能
+2. **API费用**: 图像生成会消耗七牛云API额度，请注意使用量
+3. **处理时间**: 生成过程可能需要几分钟，取决于场景数量
+4. **文本长度**: 建议小说长度在1000-5000字之间，太长可能需要较长处理时间
+5. **中文支持**: 完全支持中文小说和中文界面
+6. **并发处理**: Web应用支持多个任务同时处理
 
 ## 许可证
 
@@ -203,3 +339,17 @@ MIT License
 ## 贡献
 
 欢迎提交Issue和Pull Request！
+
+## 更新日志
+
+### v2.0.0 (最新)
+- ✨ 添加Web应用界面
+- 🤖 集成七牛云大模型API
+- 📊 实时进度显示
+- 🚀 支持服务器部署
+- 💫 异步任务处理
+
+### v1.0.0
+- 🎉 初始版本发布
+- 📝 命令行模式实现
+- 🎨 基于OpenAI API的图像生成

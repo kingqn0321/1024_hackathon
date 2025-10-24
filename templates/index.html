@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说动漫生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-section label {
+            display: block;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .input-section textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        .input-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 60px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .status-section.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .status-message {
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .result-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            border-left: 5px solid #4caf50;
+        }
+        
+        .result-section.active {
+            display: block;
+        }
+        
+        .result-section h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .result-info {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .view-btn {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .view-btn:hover {
+            background: #45a049;
+        }
+        
+        .error-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #ffebee;
+            border-radius: 10px;
+            border-left: 5px solid #f44336;
+        }
+        
+        .error-section.active {
+            display: block;
+        }
+        
+        .error-section h3 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            color: #555;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .example-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .example-link {
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .example-link:hover {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 小说动漫生成器</h1>
+            <p>输入小说文本，一键生成精美动漫</p>
+        </div>
+        
+        <div class="main-card">
+            <div class="input-section">
+                <label for="novelText">📖 输入小说内容</label>
+                <textarea 
+                    id="novelText" 
+                    placeholder="在此输入您的小说文本...&#10;&#10;例如：&#10;在一个繁华的都市中，住着一位名叫小雪的高中生。小雪有着一头乌黑的长发，总是扎成马尾，她的眼睛明亮而充满好奇..."
+                ></textarea>
+                <p class="example-text">
+                    💡 提示：建议输入1000-5000字的小说片段，内容越详细，生成的动漫效果越好！
+                    <span class="example-link" onclick="loadExample()">点击加载示例小说</span>
+                </p>
+            </div>
+            
+            <div class="button-section">
+                <button class="generate-btn" onclick="generateAnime()" id="generateBtn">
+                    ✨ 生成动漫
+                </button>
+            </div>
+            
+            <div class="status-section" id="statusSection">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%">
+                        <span id="progressText">0%</span>
+                    </div>
+                </div>
+                <div class="status-message" id="statusMessage">
+                    准备中...
+                </div>
+            </div>
+            
+            <div class="result-section" id="resultSection">
+                <h3>✅ 生成成功！</h3>
+                <div class="result-info" id="resultInfo"></div>
+                <a href="#" class="view-btn" id="viewBtn" target="_blank">
+                    🎥 查看生成的动漫
+                </a>
+            </div>
+            
+            <div class="error-section" id="errorSection">
+                <h3>❌ 生成失败</h3>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const exampleNovel = `在一个繁华的都市中，住着一位名叫小雪的高中生。小雪有着一头乌黑的长发，总是扎成马尾，她的眼睛明亮而充满好奇。她喜欢穿着校服，背着书包在城市的街道上漫步。
+
+这天早上，小雪像往常一样走在去学校的路上。突然，她注意到路边有一只受伤的小猫。小猫全身雪白，只有耳朵尖是淡粉色的。"可怜的小家伙，"小雪轻声说道，她蹲下来轻轻地抱起了小猫。
+
+就在这时，一个男孩跑了过来。他叫明宇，是小雪的同班同学。明宇个子很高，有着褐色的短发，戴着一副黑框眼镜，看起来很斯文。
+
+"小雪！那只猫是我在找的！"明宇气喘吁吁地说。
+
+"你的猫？"小雪惊讶地问。
+
+"是的，它昨天跑丢了。谢谢你找到它！"明宇感激地说。
+
+两人来到了学校的医务室，校医帮小猫处理了伤口。小雪和明宇坐在医务室外的长椅上。
+
+"你真是个善良的人，"明宇说。
+
+小雪微笑着说："任何人看到受伤的小动物都会帮忙的。"
+
+从那天起，小雪和明宇成为了好朋友。他们经常一起照顾那只小猫，给它取名叫"雪球"。
+
+一个月后的某个下午，学校里举办了文化祭。小雪和明宇一起准备了一个小摊位，展示他们拍摄的雪球的照片。许多同学都被这些温馨的照片吸引，纷纷前来观看。
+
+"这些照片真好看！"一位同学赞叹道。
+
+小雪和明宇对视一笑，他们知道，这段因为小猫而开始的友谊，将会一直持续下去。
+
+夕阳西下，文化祭接近尾声。小雪和明宇带着雪球坐在学校的草坪上，看着远处的夕阳，心中充满了温暖和希望。`;
+        
+        function loadExample() {
+            document.getElementById('novelText').value = exampleNovel;
+        }
+        
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+        
+        function generateAnime() {
+            const novelText = document.getElementById('novelText').value.trim();
+            
+            if (!novelText) {
+                alert('请输入小说文本！');
+                return;
+            }
+            
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>生成中...';
+            
+            document.getElementById('statusSection').classList.add('active');
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('errorSection').classList.remove('active');
+            
+            updateProgress(0, '正在提交任务...');
+            
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ novel_text: novelText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentTaskId = data.task_id;
+                checkStatus();
+                statusCheckInterval = setInterval(checkStatus, 2000);
+            })
+            .catch(error => {
+                showError(error.message);
+                resetButton();
+            });
+        }
+        
+        function checkStatus() {
+            if (!currentTaskId) return;
+            
+            fetch(`/api/status/${currentTaskId}`)
+            .then(response => response.json())
+            .then(data => {
+                updateProgress(data.progress, data.message);
+                
+                if (data.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    showResult(data.result);
+                    resetButton();
+                } else if (data.status === 'error') {
+                    clearInterval(statusCheckInterval);
+                    showError(data.message);
+                    resetButton();
+                }
+            })
+            .catch(error => {
+                clearInterval(statusCheckInterval);
+                showError('状态检查失败: ' + error.message);
+                resetButton();
+            });
+        }
+        
+        function updateProgress(percent, message) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = percent + '%';
+            document.getElementById('statusMessage').textContent = message;
+        }
+        
+        function showResult(result) {
+            document.getElementById('statusSection').classList.remove('active');
+            document.getElementById('resultSection').classList.add('active');
+            
+            document.getElementById('resultInfo').innerHTML = `
+                <p>📊 生成统计：</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>角色数量：${result.characters_count} 个</li>
+                    <li>场景数量：${result.scenes_count} 个</li>
+                </ul>
+            `;
+            
+            document.getElementById('viewBtn').href = result.preview_url;
+        }
+        
+        function showError(message) {
+            document.getElementById('statusSection').classList.remove('active');
+            document.getElementById('errorSection').classList.add('active');
+            document.getElementById('errorMessage').textContent = message;
+        }
+        
+        function resetButton() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = false;
+            btn.innerHTML = '✨ 生成动漫';
+        }
+    </script>
+</body>
+</html>

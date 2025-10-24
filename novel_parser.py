@@ -25,7 +25,15 @@ class Scene:
 
 class NovelParser:
     def __init__(self):
-        self.client = OpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
+        if settings.qiniu_api_key:
+            self.client = OpenAI(
+                api_key=settings.qiniu_api_key,
+                base_url=settings.qiniu_base_url
+            )
+        elif settings.openai_api_key:
+            self.client = OpenAI(api_key=settings.openai_api_key)
+        else:
+            self.client = None
     
     def extract_characters(self, novel_text: str) -> List[Character]:
         if not self.client:

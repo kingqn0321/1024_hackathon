@@ -204,7 +204,8 @@ class AnimeGenerator:
             <p><strong>性格：</strong>{char["personality"]}</p>
 """
             if ref_path:
-                html += f'            <img src="{ref_path}" alt="{char_name}">\n'
+                relative_path = self._convert_to_relative_path(ref_path)
+                html += f'            <img src="{relative_path}" alt="{char_name}">\n'
             
             html += "        </div>\n"
         
@@ -223,7 +224,8 @@ class AnimeGenerator:
 """
             
             if scene.get("image_path"):
-                html += f'        <img src="{scene["image_path"]}" alt="场景 {scene["scene_number"]}">\n'
+                relative_path = self._convert_to_relative_path(scene["image_path"])
+                html += f'        <img src="{relative_path}" alt="场景 {scene["scene_number"]}">\n'
             
             html += f"""
         <div class="narration">
@@ -232,9 +234,10 @@ class AnimeGenerator:
 """
             
             if scene.get("audio_path"):
+                relative_audio_path = self._convert_to_relative_path(scene["audio_path"])
                 html += f"""
         <audio controls>
-            <source src="{scene["audio_path"]}" type="audio/mpeg">
+            <source src="{relative_audio_path}" type="audio/mpeg">
             您的浏览器不支持音频播放。
         </audio>
 """
@@ -255,3 +258,15 @@ class AnimeGenerator:
 </html>
 """
         return html
+    
+    def _convert_to_relative_path(self, file_path: str) -> str:
+        if not file_path:
+            return ""
+        
+        path_obj = Path(file_path)
+        
+        try:
+            relative_path = path_obj.relative_to(self.output_dir)
+            return str(relative_path)
+        except ValueError:
+            return file_path

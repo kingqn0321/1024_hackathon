@@ -79,11 +79,11 @@ python app.py
 
 2. 打开浏览器访问：
 ```
-http://localhost:5000
+http://localhost:8088
 ```
 或如果部署在服务器上：
 ```
-http://服务器IP:5000
+http://服务器IP:8088
 ```
 
 3. 在网页文本框中输入小说内容
@@ -245,14 +245,14 @@ OUTPUT_DIR=output                        # 生成内容保存目录
 python app.py
 ```
 
-访问 `http://localhost:5000`
+访问 `http://localhost:8088`
 
 ### 服务器部署
 
 1. 修改 `.env` 文件中的 `WEB_HOST` 和 `WEB_PORT`：
 ```env
 WEB_HOST=0.0.0.0
-WEB_PORT=5000
+WEB_PORT=8088
 ```
 
 2. 启动服务：
@@ -262,14 +262,14 @@ python app.py
 
 3. 通过服务器IP访问：
 ```
-http://服务器IP:5000
+http://服务器IP:8088
 ```
 
 ### 生产环境部署（推荐使用Gunicorn）
 
 ```bash
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+gunicorn -w 4 -b 0.0.0.0:8088 app:app
 ```
 
 ### 安全建议

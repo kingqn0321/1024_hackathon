@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from pathlib import Path
 import threading
@@ -87,14 +88,14 @@ def run_generation(task_id, novel_text):
         generation_status[task_id]['progress'] = 100
         generation_status[task_id]['message'] = '生成完成！'
         generation_status[task_id]['result'] = {
-            'preview_url': f'/output/{relative_preview_path}',
+            'preview_url': '/output/{}'.format(relative_preview_path),
             'characters_count': len(result['characters']),
             'scenes_count': result['total_scenes']
         }
         
     except Exception as e:
         generation_status[task_id]['status'] = 'error'
-        generation_status[task_id]['message'] = f'生成失败: {str(e)}'
+        generation_status[task_id]['message'] = '生成失败: {}'.format(str(e))
         generation_status[task_id]['progress'] = 0
 
 

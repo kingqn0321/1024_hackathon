@@ -74,7 +74,8 @@ def run_generation(task_id, novel_text):
         result = generator.generate_from_novel(
             novel_text,
             generate_images=True,
-            generate_audio=True
+            generate_audio=True,
+            generate_video=True
         )
         
         generation_status[task_id]['message'] = '正在生成预览页面...'
@@ -90,7 +91,8 @@ def run_generation(task_id, novel_text):
         generation_status[task_id]['result'] = {
             'preview_url': '/output/{}'.format(relative_preview_path),
             'characters_count': len(result['characters']),
-            'scenes_count': result['total_scenes']
+            'scenes_count': result['total_scenes'],
+            'video_path': result.get('video_path')
         }
         
     except Exception as e:

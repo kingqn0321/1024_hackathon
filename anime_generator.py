@@ -199,11 +199,38 @@ class AnimeGenerator:
             width: 100%;
             margin: 10px 0;
         }
+        .video-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .video-container video {
+            max-width: 100%;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <h1>🎬 动漫预览</h1>
-    
+"""
+        
+        # 在开头添加视频显示
+        if metadata.get("video_path"):
+            relative_video_path = self._convert_to_relative_path(metadata["video_path"])
+            html += f"""
+    <div class="video-container">
+        <h2>🎥 完整视频</h2>
+        <video controls>
+            <source src="{relative_video_path}" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+"""
+        
+        html += """
     <h2>角色介绍</h2>
     <div class="characters">
 """

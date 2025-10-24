@@ -195,7 +195,7 @@ OPENAI_API_KEY=your_openai_key_here
 # 模型配置
 IMAGE_MODEL=gemini-2.5-flash-image  # 七牛云图像生成模型
 TTS_MODEL=tts-1                      # 语音合成模型
-TEXT_MODEL=gpt-4                     # 文本分析模型
+TEXT_MODEL=gpt-3.5-turbo             # 文本分析模型
 
 # Web服务配置
 WEB_HOST=0.0.0.0                     # Web服务监听地址

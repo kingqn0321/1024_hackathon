@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     image_model: str = "gemini-2.5-flash-image"
     tts_model: str = "tts-1"
-    text_model: str = "gpt-4"
+    text_model: str = "gpt-3.5-turbo"
     output_dir: str = "output"
     
     web_host: str = "0.0.0.0"

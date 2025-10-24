@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     output_dir: str = "output"
     
     web_host: str = "0.0.0.0"
-    web_port: int = 5000
+    web_port: int = 8088
     
     class Config:
         env_file = ".env"

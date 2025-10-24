@@ -131,30 +131,30 @@ class VideoGenerator:
                     "-c:v", "libx264",
                     "-tune", "stillimage",
                     "-c:a", "aac",
-                    "-b:a", "256k",
-                    "-ar", "44100",
-                    "-ac", "2",
+                    "-b:a", "160k",
+                    "-ar", "24000",
+                    "-ac", "1",
                     "-pix_fmt", "yuv420p",
                     "-shortest",
                     "-y",
                     str(segment_output)
                 ]
             else:
-                # 为没有音频的场景生成3秒视频，并添加静音音频轨道
+                # 为没有音频的场景生成3秒视频，并添加静音音频轨道（匹配源音频参数：24000 Hz 单声道）
                 cmd = [
                     "ffmpeg",
                     "-loop", "1",
                     "-i", str(Path(image_path).absolute()),
                     "-f", "lavfi",
-                    "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+                    "-i", "anullsrc=channel_layout=mono:sample_rate=24000",
                     "-t", "3",
                     "-vf", "scale=1024:1024:force_original_aspect_ratio=decrease,pad=1024:1024:(ow-iw)/2:(oh-ih)/2",
                     "-c:v", "libx264",
                     "-tune", "stillimage",
                     "-c:a", "aac",
-                    "-b:a", "256k",
-                    "-ar", "44100",
-                    "-ac", "2",
+                    "-b:a", "160k",
+                    "-ar", "24000",
+                    "-ac", "1",
                     "-pix_fmt", "yuv420p",
                     "-shortest",
                     "-y",

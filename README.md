@@ -195,7 +195,7 @@ TEXT_MODEL=gpt-3.5-turbo                 # 文本分析模型
 
 # Web服务配置
 WEB_HOST=0.0.0.0                         # Web服务监听地址
-WEB_PORT=5000                            # Web服务端口
+WEB_PORT=8088                            # Web服务端口
 
 # 输出目录
 OUTPUT_DIR=output                        # 生成内容保存目录

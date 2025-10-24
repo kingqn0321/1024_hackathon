@@ -83,10 +83,14 @@ class AudioGenerator:
             "Content-Type": "application/json"
         }
         payload = {
-            "voice_type": voice_type,
-            "encoding": "mp3",
-            "speed_ratio": 1.0,
-            "text": text
+            "audio": {
+                "voice_type": voice_type,
+                "encoding": "mp3",
+                "speed_ratio": 1.0
+            },
+            "request": {
+                "text": text
+            }
         }
         
         urls_to_try = [
@@ -100,10 +104,21 @@ class AudioGenerator:
             
             for attempt in range(max_retries):
                 try:
+                    print(f"🔍 调试信息 - {url_label}, 尝试 {attempt + 1}/{max_retries}:")
+                    print(f"   URL: {url}")
+                    print(f"   Headers: Authorization=Bearer {self.qiniu_api_key[:20]}...{self.qiniu_api_key[-10:]}")
+                    print(f"   Payload: {payload}")
+                    
                     response = requests.post(url, json=payload, headers=headers, timeout=30)
+                    
+                    print(f"   响应状态码: {response.status_code}")
+                    print(f"   响应头: {dict(response.headers)}")
+                    
                     response.raise_for_status()
                     
                     result = response.json()
+                    print(f"   响应数据: {result}")
+                    
                     if "data" in result:
                         if attempt > 0 or url_label == "备用URL":
                             print(f"✓ TTS API调用成功 ({url_label}, 尝试 {attempt + 1}/{max_retries})")
@@ -113,6 +128,7 @@ class AudioGenerator:
                         break
                 
                 except requests.exceptions.HTTPError as e:
+                    print(f"   错误响应内容: {e.response.text if e.response else 'N/A'}")
                     if e.response.status_code == 500:
                         wait_time = (2 ** attempt) * 0.5
                         print(f"⚠️ 服务器错误 (500) - {url_label}, 尝试 {attempt + 1}/{max_retries}")
@@ -131,7 +147,9 @@ class AudioGenerator:
                         print(f"   已达到最大重试次数，尝试下一个URL")
                 
                 except Exception as e:
-                    print(f"⚠️ 调用TTS API时出错 ({url_label}): {e}")
+                    print(f"⚠️ 调用TTS API时出错 ({url_label}): {type(e).__name__}: {e}")
+                    import traceback
+                    print(f"   堆栈跟踪: {traceback.format_exc()}")
                     break
         
         print(f"❌ 所有TTS API端点均失败，跳过音频生成")

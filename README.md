@@ -66,7 +66,7 @@ cp .env.example .env
 需要配置的API密钥：
 - `QINIU_API_KEY`: 七牛云大模型API密钥（必需，用于图像生成、文本分析和TTS语音合成）
 
-示例API密钥格式：`sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a873`
+⚠️ **重要提示**：请勿在代码中硬编码API密钥，务必使用 `.env` 文件进行配置
 
 ## 使用方法
 
@@ -184,21 +184,21 @@ python main.py example_novel.txt
 
 ```env
 # 七牛云API配置（必需）
-QINIU_API_KEY=sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a873
+QINIU_API_KEY=your_qiniu_api_key_here    # 请填入您的七牛云API密钥
 QINIU_BASE_URL=https://openai.qiniu.com/v1
 QINIU_BACKUP_URL=https://api.qnaigc.com/v1
 
 # 模型配置
-IMAGE_MODEL=gemini-2.5-flash-image         # 七牛云图像生成模型
-TTS_VOICE_TYPE=qiniu_zh_female_wwxkjx      # 七牛云TTS语音类型
-TEXT_MODEL=gpt-3.5-turbo                   # 文本分析模型
+IMAGE_MODEL=gemini-2.5-flash-image       # 七牛云图像生成模型
+TTS_VOICE_TYPE=qiniu_zh_female_wwxkjx    # 七牛云TTS语音类型
+TEXT_MODEL=gpt-3.5-turbo                 # 文本分析模型
 
 # Web服务配置
-WEB_HOST=0.0.0.0                     # Web服务监听地址
-WEB_PORT=5000                        # Web服务端口
+WEB_HOST=0.0.0.0                         # Web服务监听地址
+WEB_PORT=8088                            # Web服务端口
 
 # 输出目录
-OUTPUT_DIR=output
+OUTPUT_DIR=output                        # 生成内容保存目录
 ```
 
 ## 工作原理
@@ -271,6 +271,19 @@ http://服务器IP:5000
 pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
+
+### 安全建议
+
+1. **API密钥安全**：
+   - 切勿在代码中硬编码API密钥
+   - 使用 `.env` 文件存储敏感信息
+   - 确保 `.env` 文件在 `.gitignore` 中
+   - 不要将真实的API密钥提交到版本控制系统
+
+2. **生产环境**：
+   - 使用环境变量或密钥管理服务
+   - 定期轮换API密钥
+   - 限制API密钥的访问权限
 
 ## API文档
 

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动漫生成器 - 基于小说自动生成动漫</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-box {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .status-box.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-message {
+            text-align: center;
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .result-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-item .label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .info-item .value {
+            color: #333;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .btn-view {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-box {
+            background: #fee;
+            border: 2px solid #fcc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            color: #c33;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 动漫生成器</h1>
+        <p class="subtitle">基于小说自动生成动漫 - 图配文 + 声音</p>
+
+        <div class="form-group">
+            <label for="novel-text">请输入小说内容：</label>
+            <textarea 
+                id="novel-text" 
+                placeholder="在这里输入您的小说内容...&#10;&#10;支持中文小说，系统会自动：&#10;1. 提取小说中的角色&#10;2. 分解场景&#10;3. 生成动漫风格图片&#10;4. 生成配音和旁白&#10;&#10;点击"加载示例小说"可以快速体验功能！"
+            ></textarea>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-secondary" id="load-example">加载示例小说</button>
+            <button class="btn-primary" id="generate-btn">生成动漫</button>
+        </div>
+
+        <div class="status-box" id="status-box">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill">0%</div>
+            </div>
+            <div class="status-message" id="status-message">准备中...</div>
+            <div id="result-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+
+        document.getElementById('load-example').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/example-novel');
+                const data = await response.json();
+                
+                if (data.content) {
+                    document.getElementById('novel-text').value = data.content;
+                } else {
+                    alert('加载示例失败：' + (data.error || '未知错误'));
+                }
+            } catch (error) {
+                alert('加载示例失败：' + error.message);
+            }
+        });
+
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const novelText = document.getElementById('novel-text').value.trim();
+            
+            if (!novelText) {
+                alert('请输入小说内容！');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generate-btn');
+            const statusBox = document.getElementById('status-box');
+            const resultContainer = document.getElementById('result-container');
+            
+            generateBtn.disabled = true;
+            statusBox.classList.add('active');
+            resultContainer.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        novel_text: novelText
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.task_id) {
+                    currentTaskId = data.task_id;
+                    checkStatus();
+                } else {
+                    throw new Error(data.error || '未知错误');
+                }
+            } catch (error) {
+                generateBtn.disabled = false;
+                resultContainer.innerHTML = `
+                    <div class="error-box">
+                        <strong>错误：</strong>${error.message}
+                    </div>
+                `;
+            }
+        });
+
+        async function checkStatus() {
+            if (!currentTaskId) return;
+
+            try {
+                const response = await fetch(`/api/status/${currentTaskId}`);
+                const data = await response.json();
+
+                updateProgress(data);
+
+                if (data.status === 'completed') {
+                    showResult(data.result);
+                    document.getElementById('generate-btn').disabled = false;
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                    }
+                } else if (data.status === 'failed') {
+                    showError(data.error || data.message);
+                    document.getElementById('generate-btn').disabled = false;
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                    }
+                } else {
+                    if (!statusCheckInterval) {
+                        statusCheckInterval = setInterval(checkStatus, 2000);
+                    }
+                }
+            } catch (error) {
+                console.error('检查状态失败:', error);
+            }
+        }
+
+        function updateProgress(data) {
+            const progressFill = document.getElementById('progress-fill');
+            const statusMessage = document.getElementById('status-message');
+            
+            const progress = data.progress || 0;
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = progress + '%';
+            statusMessage.textContent = data.message || '处理中...';
+        }
+
+        function showResult(result) {
+            const resultContainer = document.getElementById('result-container');
+            
+            resultContainer.innerHTML = `
+                <div class="result-box">
+                    <h3>✅ 生成成功！</h3>
+                    <div class="result-info">
+                        <div class="info-item">
+                            <div class="label">角色数量</div>
+                            <div class="value">${result.characters_count}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">场景数量</div>
+                            <div class="value">${result.scenes_count}</div>
+                        </div>
+                    </div>
+                    <button class="btn-view" onclick="window.open('${result.preview_url}', '_blank')">
+                        📺 查看生成的动漫
+                    </button>
+                </div>
+            `;
+        }
+
+        function showError(error) {
+            const resultContainer = document.getElementById('result-container');
+            
+            resultContainer.innerHTML = `
+                <div class="error-box">
+                    <strong>❌ 生成失败：</strong>${error}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

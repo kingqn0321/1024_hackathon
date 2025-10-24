@@ -1,11 +1,15 @@
 # 动漫生成器 - 从小说到动漫
 
-这是一个自动根据小说文本生成动漫的工具。它可以：
-- 自动提取小说中的角色和场景
-- 为每个角色生成一致的视觉形象
-- 生成场景图片（图配文的形式）
-- 生成场景旁白和对话的语音
-- 输出HTML预览页面，展示完整的动漫内容
+这是一个自动根据小说文本生成动漫的工具。支持**Web界面**和**命令行**两种使用方式。
+
+## 主要特性
+
+- 🌐 **Web应用界面** - 在浏览器中输入小说，一键生成动漫
+- 🎭 **角色一致性** - 自动提取角色并保持视觉统一
+- 📖 **智能场景分解** - AI自动分析小说，提取关键场景
+- 🎨 **动漫风格图片** - 使用七牛云/OpenAI生成高质量图片
+- 🔊 **语音合成** - 自动生成旁白和对话配音
+- 📱 **预览界面** - 图配文+声音的展示方式
 
 ## 功能特点
 
@@ -56,12 +60,29 @@ cp .env.example .env
 ```
 
 需要配置的API密钥：
-- `OPENAI_API_KEY`: 用于图像生成和文字转语音（必需）
-- `ANTHROPIC_API_KEY`: 用于高级文本分析（可选）
+- `QINIU_API_KEY`: 七牛云API密钥（推荐，用于图像生成）
+- `OPENAI_API_KEY`: OpenAI API密钥（备选，用于图像生成和文字转语音）
 
 ## 使用方法
 
-### 基本使用
+### 方式一：Web应用（推荐）
+
+1. 启动Web服务器：
+```bash
+python app.py
+```
+
+2. 打开浏览器访问：
+   - 本地：`http://localhost:5000`
+   - 服务器：`http://服务器IP:5000`
+
+3. 在网页中：
+   - 输入小说文本（或点击"加载示例小说"）
+   - 点击"生成动漫"按钮
+   - 等待生成完成
+   - 点击"查看生成的动漫"预览结果
+
+### 方式二：命令行
 
 ```bash
 python main.py example_novel.txt
@@ -107,15 +128,112 @@ output/
 
 在浏览器中打开 `output/preview.html` 即可查看生成的动漫。
 
+## Web应用部署
+
+### 本地部署
+
+```bash
+python app.py
+```
+
+访问 `http://localhost:5000`
+
+### 服务器部署
+
+1. 修改 `.env` 文件：
+```env
+WEB_HOST=0.0.0.0
+WEB_PORT=5000
+```
+
+2. 启动服务：
+```bash
+python app.py
+```
+
+3. 通过服务器IP访问：`http://服务器IP:5000`
+
+### 生产环境部署（使用Gunicorn）
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+## API接口文档
+
+### POST /api/generate
+
+生成动漫任务
+
+**请求体：**
+```json
+{
+  "novel_text": "小说文本内容..."
+}
+```
+
+**响应：**
+```json
+{
+  "task_id": "1234567890",
+  "message": "动漫生成任务已启动"
+}
+```
+
+### GET /api/status/<task_id>
+
+查询任务状态
+
+**响应（处理中）：**
+```json
+{
+  "status": "processing",
+  "progress": 45,
+  "message": "正在生成场景图像...",
+  "result": null,
+  "error": null
+}
+```
+
+**响应（完成）：**
+```json
+{
+  "status": "completed",
+  "progress": 100,
+  "message": "生成完成！",
+  "result": {
+    "preview_url": "/output/preview.html",
+    "characters_count": 3,
+    "scenes_count": 5
+  },
+  "error": null
+}
+```
+
+### GET /api/example-novel
+
+获取示例小说内容
+
+**响应：**
+```json
+{
+  "content": "小说文本内容..."
+}
+```
+
 ## 项目结构
 
 ```
 .
-├── main.py                 # 主程序入口
+├── app.py                  # Flask Web应用
+├── templates/
+│   └── index.html         # Web界面
+├── main.py                 # 命令行入口
 ├── anime_generator.py      # 动漫生成器核心类
 ├── novel_parser.py         # 小说解析器
 ├── character_manager.py    # 角色管理器（保持一致性）
-├── image_generator.py      # 图像生成器
+├── image_generator.py      # 图像生成器（支持七牛云API）
 ├── audio_generator.py      # 音频生成器
 ├── config.py              # 配置管理
 ├── requirements.txt       # Python依赖
@@ -135,23 +253,49 @@ python main.py example_novel.txt
 
 ## 技术栈
 
-- **文本分析**: OpenAI GPT-4
-- **图像生成**: DALL-E 3
+- **Web框架**: Flask
+- **文本分析**: 七牛云大模型 / OpenAI GPT-4
+- **图像生成**: 七牛云 Gemini 2.5 Flash Image / DALL-E 3
 - **语音合成**: OpenAI TTS
-- **Python库**: openai, anthropic, pillow, pydantic
+- **Python库**: flask, openai, anthropic, pillow, pydantic
 
 ## 配置说明
 
 在 `.env` 文件中可以配置以下参数：
 
 ```env
-OPENAI_API_KEY=sk-...           # OpenAI API密钥
-ANTHROPIC_API_KEY=sk-ant-...    # Anthropic API密钥（可选）
-IMAGE_MODEL=dall-e-3            # 图像生成模型
-TTS_MODEL=tts-1                 # 语音合成模型
-TEXT_MODEL=gpt-4                # 文本分析模型
-OUTPUT_DIR=output               # 输出目录
+# 七牛云API配置（推荐）
+QINIU_API_KEY=sk-...                          # 七牛云API密钥
+QINIU_BASE_URL=https://openai.qiniu.com/v1    # 七牛云API端点
+QINIU_BACKUP_URL=https://api.qnaigc.com/v1    # 七牛云备用端点
+
+# OpenAI API配置（备选）
+OPENAI_API_KEY=sk-...                         # OpenAI API密钥
+ANTHROPIC_API_KEY=sk-ant-...                  # Anthropic API密钥（可选）
+
+# 模型配置
+IMAGE_MODEL=dall-e-3                          # 图像生成模型
+TTS_MODEL=tts-1                               # 语音合成模型
+TEXT_MODEL=gpt-4                              # 文本分析模型
+
+# 输出配置
+OUTPUT_DIR=output                             # 输出目录
+
+# Web服务配置
+WEB_HOST=0.0.0.0                             # Web服务监听地址
+WEB_PORT=5000                                # Web服务端口
+WEB_DEBUG=false                              # 调试模式
 ```
+
+### 七牛云API配置
+
+本项目优先使用七牛云大模型API，提供更快的响应速度和更低的成本。
+
+1. 获取七牛云API密钥
+2. 在 `.env` 文件中配置 `QINIU_API_KEY`
+3. 系统会自动使用七牛云API进行图像生成和文本分析
+
+如果没有配置七牛云API，系统会自动降级到OpenAI API。
 
 ## 工作原理
 

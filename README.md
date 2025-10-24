@@ -174,7 +174,7 @@ python main.py example_novel.txt
 - **Web框架**: Flask（提供Web服务和API）
 - **AI服务**: 七牛云大模型平台
   - 图像生成：Gemini 2.5 Flash Image
-  - 文本分析：GPT系列模型（通过七牛云API）
+  - 文本分析：Qwen3-Max模型（通过七牛云API）
   - 语音合成：七牛云TTS API
 - **Python库**: flask, pillow, pydantic, requests
 
@@ -191,7 +191,7 @@ QINIU_BACKUP_URL=https://api.qnaigc.com/v1
 # 模型配置
 IMAGE_MODEL=gemini-2.5-flash-image       # 七牛云图像生成模型
 TTS_VOICE_TYPE=qiniu_zh_female_wwxkjx    # 七牛云TTS语音类型
-TEXT_MODEL=gpt-3.5-turbo                 # 文本分析模型
+TEXT_MODEL=qwen3-max                      # 文本分析模型
 
 # Web服务配置
 WEB_HOST=0.0.0.0                         # Web服务监听地址
@@ -204,7 +204,7 @@ OUTPUT_DIR=output                        # 生成内容保存目录
 ## 工作原理
 
 ### 1. 角色提取
-使用GPT模型（通过七牛云API）分析小说文本，提取所有主要角色的信息：
+使用Qwen3-Max模型（通过七牛云API）分析小说文本，提取所有主要角色的信息：
 - 角色名字
 - 背景描述
 - 外貌特征（详细描述，用于保持一致性）

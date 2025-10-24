@@ -1,4 +1,5 @@
 import re
+import json
 from typing import List, Dict
 from dataclasses import dataclass
 from openai import OpenAI
@@ -35,6 +36,20 @@ class NovelParser:
         else:
             self.client = None
     
+    def _extract_json(self, text: str) -> any:
+        text = text.strip()
+        
+        json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', text, re.DOTALL)
+        if json_match:
+            text = json_match.group(1)
+        
+        text = text.strip()
+        
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse JSON from LLM response. Error: {e}. Response text: {text[:200]}...")
+    
     def extract_characters(self, novel_text: str) -> List[Character]:
         if not self.client:
             return self._extract_characters_simple(novel_text)
@@ -68,8 +83,7 @@ class NovelParser:
             temperature=0.7
         )
         
-        import json
-        characters_data = json.loads(response.choices[0].message.content)
+        characters_data = self._extract_json(response.choices[0].message.content)
         return [Character(**char) for char in characters_data]
     
     def _extract_characters_simple(self, novel_text: str) -> List[Character]:
@@ -125,8 +139,7 @@ class NovelParser:
             temperature=0.7
         )
         
-        import json
-        scenes_data = json.loads(response.choices[0].message.content)
+        scenes_data = self._extract_json(response.choices[0].message.content)
         return [Scene(**scene) for scene in scenes_data]
     
     def _split_scenes_simple(self, novel_text: str, characters: List[Character]) -> List[Scene]:

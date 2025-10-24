@@ -34,7 +34,7 @@
 - Base64格式直接接收，无需下载
 
 ### 🔊 音频生成
-- 使用OpenAI TTS生成场景旁白（可选）
+- 使用七牛云TTS生成场景旁白
 - 支持为对话生成语音
 - 自动合成完整的场景音频
 
@@ -64,8 +64,7 @@ cp .env.example .env
 ```
 
 需要配置的API密钥：
-- `QINIU_API_KEY`: 七牛云大模型API密钥（必需，用于图像生成和文本分析）
-- `OPENAI_API_KEY`: OpenAI API密钥（可选，用于TTS语音合成）
+- `QINIU_API_KEY`: 七牛云大模型API密钥（必需，用于图像生成、文本分析和TTS语音合成）
 
 示例API密钥格式：`sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a873`
 
@@ -176,8 +175,8 @@ python main.py example_novel.txt
 - **AI服务**: 七牛云大模型平台
   - 图像生成：Gemini 2.5 Flash Image
   - 文本分析：GPT系列模型（通过七牛云API）
-- **语音合成**: OpenAI TTS（可选）
-- **Python库**: openai, flask, pillow, pydantic, requests
+  - 语音合成：七牛云TTS API
+- **Python库**: flask, pillow, pydantic, requests
 
 ## 配置说明
 
@@ -189,13 +188,10 @@ QINIU_API_KEY=sk-50e5a2a095a165fb6595ce18bbddb5a04ff983cb7032dea396bf8ff1bd41a87
 QINIU_BASE_URL=https://openai.qiniu.com/v1
 QINIU_BACKUP_URL=https://api.qnaigc.com/v1
 
-# OpenAI API配置（可选，用于TTS）
-OPENAI_API_KEY=your_openai_key_here
-
 # 模型配置
-IMAGE_MODEL=gemini-2.5-flash-image  # 七牛云图像生成模型
-TTS_MODEL=tts-1                      # 语音合成模型
-TEXT_MODEL=gpt-4                     # 文本分析模型
+IMAGE_MODEL=gemini-2.5-flash-image         # 七牛云图像生成模型
+TTS_VOICE_TYPE=qiniu_zh_female_wwxkjx      # 七牛云TTS语音类型
+TEXT_MODEL=gpt-3.5-turbo                   # 文本分析模型
 
 # Web服务配置
 WEB_HOST=0.0.0.0                     # Web服务监听地址
@@ -232,7 +228,7 @@ OUTPUT_DIR=output
 ### 4. 内容生成
 对每个场景：
 - 使用七牛云Gemini 2.5 Flash Image生成场景图片（包含一致的角色形象）
-- 使用OpenAI TTS生成场景旁白和对话音频（可选）
+- 使用七牛云TTS生成场景旁白和对话音频
 - 记录所有元数据
 
 ### 5. 预览生成

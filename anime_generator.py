@@ -88,10 +88,6 @@ class AnimeGenerator:
             "total_scenes": len(scenes)
         }
         
-        metadata_path = self.output_dir / "anime_metadata.json"
-        with open(metadata_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
-        
         if generate_video and (generate_images or scene_outputs):
             print("\n步骤 6/6: 生成视频...")
             video_filename = "anime_output.mp4"
@@ -103,6 +99,10 @@ class AnimeGenerator:
             )
             if video_path:
                 result["video_path"] = video_path
+        
+        metadata_path = self.output_dir / "anime_metadata.json"
+        with open(metadata_path, 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
         
         print("\n" + "=" * 50)
         print("✓ 动漫生成完成！")

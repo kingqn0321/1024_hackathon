@@ -31,8 +31,6 @@ class NovelParser:
                 api_key=settings.qiniu_api_key,
                 base_url=settings.qiniu_base_url
             )
-        elif settings.openai_api_key:
-            self.client = OpenAI(api_key=settings.openai_api_key)
         else:
             self.client = None
     

@@ -6,6 +6,7 @@ from novel_parser import NovelParser, Scene, Character
 from character_manager import CharacterManager
 from image_generator import ImageGenerator
 from audio_generator import AudioGenerator
+from video_generator import VideoGenerator
 from config import settings
 
 
@@ -15,30 +16,31 @@ class AnimeGenerator:
         self.character_manager = None
         self.image_generator = None
         self.audio_generator = AudioGenerator()
+        self.video_generator = VideoGenerator()
         self.output_dir = Path(settings.output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
-    def generate_from_novel(self, novel_text: str, generate_images: bool = True, generate_audio: bool = True) -> Dict:
+    def generate_from_novel(self, novel_text: str, generate_images: bool = True, generate_audio: bool = True, generate_video: bool = True) -> Dict:
         print("=" * 50)
         print("开始生成动漫...")
         print("=" * 50)
         
-        print("\n步骤 1/5: 提取角色...")
+        print("\n步骤 1/6: 提取角色...")
         characters = self.parser.extract_characters(novel_text)
         print(f"✓ 提取到 {len(characters)} 个角色")
         for char in characters:
             print(f"  - {char.name}: {char.description}")
         
-        print("\n步骤 2/5: 初始化角色管理器...")
+        print("\n步骤 2/6: 初始化角色管理器...")
         self.character_manager = CharacterManager(characters)
         self.image_generator = ImageGenerator(self.character_manager)
         print("✓ 角色管理器初始化完成")
         
-        print("\n步骤 3/5: 分解场景...")
+        print("\n步骤 3/6: 分解场景...")
         scenes = self.parser.split_into_scenes(novel_text, characters)
         print(f"✓ 分解为 {len(scenes)} 个场景")
         
-        print("\n步骤 4/5: 生成角色参考图...")
+        print("\n步骤 4/6: 生成角色参考图...")
         character_refs = {}
         if generate_images:
             for char in characters:
@@ -49,7 +51,7 @@ class AnimeGenerator:
         else:
             print("  ⊘ 跳过图像生成")
         
-        print("\n步骤 5/5: 生成场景内容...")
+        print("\n步骤 5/6: 生成场景内容...")
         scene_outputs = []
         
         for scene in scenes:
@@ -90,9 +92,23 @@ class AnimeGenerator:
         with open(metadata_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         
+        if generate_video and (generate_images or scene_outputs):
+            print("\n步骤 6/6: 生成视频...")
+            video_filename = "anime_output.mp4"
+            video_path = self.video_generator.generate_video_from_scenes(
+                scene_outputs,
+                output_filename=video_filename,
+                fps=1,
+                audio_enabled=generate_audio
+            )
+            if video_path:
+                result["video_path"] = video_path
+        
         print("\n" + "=" * 50)
         print("✓ 动漫生成完成！")
         print(f"✓ 元数据已保存到: {metadata_path}")
+        if result.get("video_path"):
+            print(f"✓ 视频已保存到: {result['video_path']}")
         print("=" * 50)
         
         return result

@@ -22,6 +22,8 @@ class AudioGenerator:
             return None
         
         narration_text = self._build_narration_text(scene)
+        if not narration_text or narration_text.strip() == "":
+            return None
         
         try:
             audio_data = self._call_qiniu_tts(narration_text)
@@ -52,6 +54,9 @@ class AudioGenerator:
     def generate_dialogue(self, speaker: str, text: str, output_filename: str, voice: str = "qiniu_zh_female_wwxkjx") -> Optional[str]:
         if not self.qiniu_api_key:
             print(f"⚠️ 未配置七牛云 API Key，跳过对话音频生成")
+            return None
+        
+        if not text or text.strip() == "":
             return None
         
         try:
@@ -100,20 +105,9 @@ class AudioGenerator:
             
             for attempt in range(max_retries):
                 try:
-                    print(f"🔍 调试信息 - {url_label}, 尝试 {attempt + 1}/{max_retries}:")
-                    print(f"   URL: {url}")
-                    print(f"   Headers: Authorization=Bearer {self.qiniu_api_key[:20]}...{self.qiniu_api_key[-10:]}")
-                    print(f"   Payload: {payload}")
-                    
                     response = requests.post(url, json=payload, headers=headers, timeout=30)
-                    
-                    print(f"   响应状态码: {response.status_code}")
-                    print(f"   响应头: {dict(response.headers)}")
-                    
                     response.raise_for_status()
-                    
                     result = response.json()
-                    print(f"   响应数据: {result}")
                     
                     if "data" in result:
                         if attempt > 0 or url_label == "备用URL":

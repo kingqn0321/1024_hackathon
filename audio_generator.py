@@ -44,6 +44,8 @@ class AudioGenerator:
     def _build_narration_text(self, scene: Scene) -> str:
         parts = []
         
+        parts.append(f"场景{scene.scene_number}。{scene.setting}。")
+        
         for dialogue in scene.dialogue:
             speaker = dialogue.get("speaker", "")
             text = dialogue.get("text", "")
